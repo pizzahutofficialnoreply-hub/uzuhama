@@ -1,0 +1,8 @@
+{
+  "name": "Remix Remix Remix Uzuhama Broadcast Tracker",
+  "description": "Streamer Uzuhama\u0027s broadcast pattern analysis, schedule prediction, and historical logs.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

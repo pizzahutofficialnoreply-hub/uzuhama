@@ -1,0 +1,131 @@
+import { AppData, BroadcastLog } from './types';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+export function parseTimeTo24(timeStr: string): number {
+  if (!timeStr) return 0;
+  
+  const [time, period] = timeStr.split(' ');
+  if (!time || !period) return 0;
+  
+  let [hours, minutes] = time.split(':').map(Number);
+  
+  if (period === 'PM' && hours !== 12) {
+    hours += 12;
+  } else if (period === 'AM' && hours === 12) {
+    hours = 0;
+  }
+  
+  return hours + (minutes / 60);
+}
+
+export function formatTimeRange(startTime: string, endTime?: string, durationHours?: number): string {
+  const start24 = parseTimeTo24(startTime);
+  const end24 = endTime ? parseTimeTo24(endTime) : (durationHours ? (start24 + durationHours) % 24 : null);
+  
+  const formatHour = (h: number) => {
+    const period = h >= 12 ? '오후' : '오전';
+    const hour12 = h % 12 || 12;
+    return `${period} ${Math.floor(hour12)}시`;
+  };
+  
+  const startStr = formatHour(start24);
+  const endStr = end24 !== null ? formatHour(end24) : '';
+  
+  return `${startStr}${endStr ? ` ~ ${endStr}` : ''}`;
+}
+
+export function formatDuration(hours: number): string {
+  const h = Math.floor(hours);
+  const m = Math.round((hours - h) * 60);
+  
+  if (h === 0) return `${m}분`;
+  if (m === 0) return `${h}시간`;
+  return `${h}시간 ${m}분`;
+}
+
+export function formatTo12Hour(hours24: number): string {
+  const period = hours24 >= 12 ? '오후' : '오전';
+  const hour12 = hours24 % 12 || 12;
+  return `${period} ${Math.floor(hour12)}시`;
+}
+
+export function parseTimeString(timeStr: string): string {
+  if (!timeStr) return '0';
+  
+  const [time, period] = timeStr.split(' ');
+  if (!time || !period) return '0';
+  
+  let [hours] = time.split(':').map(Number);
+  
+  if (period === 'PM' && hours !== 12) {
+    hours += 12;
+  } else if (period === 'AM' && hours === 12) {
+    hours = 0;
+  }
+  
+  return Math.floor(hours).toString();
+}
+
+const CHOSUNG = ["ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"];
+const HANGUL_START = 44032;
+const HANGUL_END = 55203;
+
+export function getChosung(text: string) {
+  let result = "";
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    if (code >= HANGUL_START && code <= HANGUL_END) {
+      const chosungIndex = Math.floor((code - HANGUL_START) / 588);
+      result += CHOSUNG[chosungIndex];
+    } else {
+      result += text[i];
+    }
+  }
+  return result;
+}
+
+export function fuzzyKoreanMatch(query: string, target: string) {
+  if (!query) return true;
+  if (!target) return false;
+  
+  const normalize = (s: string) => s.replace(/\s+/g, '').toLowerCase();
+  const nQuery = normalize(query);
+  const nTarget = normalize(target);
+  
+  if (nTarget.includes(nQuery)) return true;
+  
+  const cTarget = getChosung(nTarget);
+  const cQuery = getChosung(nQuery);
+  
+  if (cTarget.includes(cQuery)) return true;
+  
+  let qIdx = 0;
+  for (let tIdx = 0; tIdx < nTarget.length; tIdx++) {
+    if (nTarget[tIdx] === nQuery[qIdx] || getChosung(nTarget[tIdx]) === getChosung(nQuery[qIdx])) {
+      qIdx++;
+    }
+    if (qIdx === nQuery.length) return true;
+  }
+  return false;
+}
+
+export function fuzzyDateMatch(query: string, dateStr: string) {
+  const normalize = (s: string) => s.replace(/[^0-9]/g, '');
+  const nQuery = normalize(query);
+  if (!nQuery) return false;
+  
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return false;
+  const month = parts[1];
+  const day = parts[2];
+  
+  const mmdd = month + day;
+  const m_d = parseInt(month, 10).toString() + parseInt(day, 10).toString();
+  
+  return mmdd.includes(nQuery) || m_d.includes(nQuery);
+}
