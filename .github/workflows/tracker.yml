@@ -12,9 +12,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - name: Install Dependencies
-        run: npm install firebase
+        run: npm install firebase node-fetch
       - name: Run Tracker
         env:
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
