@@ -14,8 +14,8 @@ jobs:
         with:
           node-version: 22
       - name: Install Dependencies
-        run: npm install firebase node-fetch
+        run: npm install firebase-admin
       - name: Run Tracker
         env:
-          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: node scripts/tracker.mjs
