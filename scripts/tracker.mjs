@@ -1,4 +1,5 @@
-import admin from 'firebase-admin';
+import { initializeApp, cert, getApps } from 'firebase-admin/app';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 
 // 1. GitHub Secret에서 전달된 서비스 계정 키 파싱 및 초기화
 if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
@@ -7,13 +8,13 @@ if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
 
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
+if (getApps().length === 0) {
+  initializeApp({
+    credential: cert(serviceAccount)
   });
 }
 
-const db = admin.firestore();
+const db = getFirestore();
 
 // 2. 치지직 채널 ID 설정
 const CHANNEL_ID = 'uzuhama_channel_id'; // 실제 치지직 채널 고유 ID
@@ -36,13 +37,13 @@ async function runTracker() {
 
     console.log(`[Tracker] Status: ${status} | Title: ${title}`);
 
-    // 3. Firestore에 데이터 기록 (보안 규칙을 무시하고 관리자 권한으로 쓰기)
+    // 3. Firestore에 데이터 기록 (보안 규칙을 우회하여 마스터 권한으로 쓰기)
     await db.collection('live_status').doc(CHANNEL_ID).set({
       status,
       title,
       category,
       concurrentUserCount,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      updatedAt: FieldValue.serverTimestamp()
     }, { merge: true });
 
     console.log('[Firestore] Successfully updated live status.');
