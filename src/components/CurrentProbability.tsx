@@ -22,7 +22,7 @@ export function CurrentProbability({ logs = [], onProbChange }: { logs?: Broadca
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
-      doc(db, 'config', 'liveStatus'),
+      doc(db, 'live_status', 'c6e1c8cf1b128bd321cc2684c92b5a00'),
       (snap) => {
         if (snap.exists()) {
           setLiveData(snap.data());

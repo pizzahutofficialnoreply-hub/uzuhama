@@ -17,7 +17,7 @@ if (getApps().length === 0) {
 const db = getFirestore();
 
 // 2. 치지직 채널 ID 설정
-const CHANNEL_ID = 'uzuhama_channel_id'; // 실제 치지직 채널 고유 ID
+const CHANNEL_ID = 'c6e1c8cf1b128bd321cc2684c92b5a00'; // 실제 치지직 채널 고유 ID
 
 async function runTracker() {
   try {
